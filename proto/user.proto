@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package mealprep;
+
+message UserProfile {
+  string user_id = 1;
+  DietaryProfile dietary_profile = 2;
+  string dietary_preferences = 3;
+  string dietary_dislikes = 4;
+  repeated KitchenTool kitchen_tools = 5;
+  repeated PantryItem pantry = 6;
+  repeated string grocery_stores = 7;
+  MealPlanningParams meal_params = 8;
+}
+
+message DietaryProfile {
+  enum ProfileType {
+    OMNIVORE = 0;
+    VEGAN = 1;
+    VEGETARIAN = 2;
+    PESCATARIAN = 3;
+    PALEO = 4;
+    KETO = 5;
+    GLUTEN_FREE = 6;
+  }
+  repeated ProfileType profiles = 1;
+  repeated Allergen allergens = 2;
+}
+
+enum Allergen {
+  NUTS = 0;
+  DAIRY = 1;
+  EGGS = 2;
+}
+
+enum KitchenTool {
+  OVEN = 0;
+  STOVE = 1;
+  AIR_FRYER = 2;
+  MICROWAVE = 3;
+  INSTANT_POT = 4;
+  BLENDER = 5;
+  NUTRIBULLET = 6;
+  IMMERSION_BLENDER = 7;
+  VACUUM_SEALER = 8;
+  HAND_MIXER = 9;
+  STAND_MIXER = 10;
+}
+
+message PantryItem {
+  string name = 1;
+  float quantity = 2;
+  string unit = 3;
+  string notes = 4;
+}
+
+message MealPlanningParams {
+  repeated MealTypeRequest meal_requests = 1;
+  int32 daily_calorie_target = 2;
+  MacroSplit macro_targets = 3;
+}
+
+message MealTypeRequest {
+  enum MealType {
+    BREAKFAST = 0;
+    LUNCH = 1;
+    DINNER = 2;
+    SNACK = 3;
+    DESSERT = 4;
+  }
+  MealType type = 1;
+  int32 recipes_per_week = 2;
+  int32 servings_per_recipe = 3;
+}
+
+message MacroSplit {
+  float carbs_percent = 1;
+  float fat_percent = 2;
+  float protein_percent = 3;
+}

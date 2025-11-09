@@ -1,0 +1,18 @@
+# Ignore Python virtual environments
+.venv/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
+# Ignore generated proto Python code
+src/mealprep/proto/
+
+# Ignore BigQuery credentials and config
+bigquery/*.json
+
+# Ignore OS and editor files
+.DS_Store
+*.swp
+*.swo
+.vscode/
