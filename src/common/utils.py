@@ -1,3 +1,4 @@
+
 from google.cloud import secretmanager
 import os
 
@@ -20,3 +21,9 @@ def get_gcp_secret(
     name = f"projects/{project_id}/secrets/{secret_id}/versions/{version}"
     response = client.access_secret_version(request={"name": name})
     return response.payload.data.decode("UTF-8")
+
+def get_project_name() -> str:
+    """
+    Returns the GCP project name from the PROJECT_NAME env var, or 'recipellm' if not set.
+    """
+    return os.getenv("PROJECT_NAME", "recipellm")
