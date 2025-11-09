@@ -1,4 +1,5 @@
 
+
 from google.cloud import secretmanager
 import os
 
@@ -27,3 +28,9 @@ def get_project_name() -> str:
     Returns the GCP project name from the PROJECT_NAME env var, or 'recipellm' if not set.
     """
     return os.getenv("PROJECT_NAME", "recipellm")
+
+def get_bigquery_dataset_name() -> str:
+    """
+    Returns the BigQuery dataset name from the BIGQUERY_DATASET env var, or 'mealprep' if not set.
+    """
+    return os.getenv("BIGQUERY_DATASET", "mealprep")
