@@ -1,15 +1,7 @@
-import json
-from langchain.tools import tool
 from src.langgraph_tools.get_nutrition import get_nutrition
 from src.langgraph_tools.google_search import search_tool, fetch_url_content
 from langchain.agents import create_agent
-from langchain_google_vertexai import ChatVertexAI
-import google.generativeai as genai
-from src.langgraph_tools.gcp_secrets import get_gcp_secret
-
-
-
-genai.configure(api_key="AIzaSyCfx8Th15NccJF7F64GDeR_HBI_4nPOTm4")
+from common.llms import get_gemini_flash
 
 # System prompt for the agent
 system_prompt = (
@@ -24,17 +16,25 @@ system_prompt = (
     "Format your output so it can be parsed into the Recipe proto message."
 )
 
-llm = ChatVertexAI(model_name="gemini-2.5-flash", project="recipellm", system_message=system_prompt)
+# Choose Gemini model (flash, pro, ultra)
+llm = get_gemini_flash(system_prompt=system_prompt)
+# llm = get_gemini_pro(system_prompt=system_prompt)
+# llm = get_gemini_ultra(system_prompt=system_prompt)
 
 recipe_toolkit = [search_tool, fetch_url_content, get_nutrition]
 
 agent = create_agent(tools=recipe_toolkit, model=llm, debug=True)
 
-result = agent.invoke({
-    "messages": [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": "Create a high protein vegan recipe for a post-workout grain bowl."}
-    ]
-})
+result = agent.invoke(
+    {
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": "Create a high protein vegan recipe for a post-workout grain bowl.",
+            },
+        ]
+    }
+)
 
 print(result)

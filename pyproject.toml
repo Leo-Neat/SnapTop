@@ -19,6 +19,15 @@ dependencies = [
 	"langchain-google-vertexai>=3.0.2",
 	"google-cloud-storage>=2.19.0",
 	"google-generativeai>=0.8.5",
+	"pytest>=9.0.0",
+	"ruff>=0.14.4",
 ]
 
 [tool.uv]
+
+# pyproject.toml
+[tool.pytest.ini_options]
+pythonpath = [
+	".",  # Add current directory
+	"src", # Add a 'src' directory
+]

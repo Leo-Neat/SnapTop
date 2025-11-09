@@ -33,7 +33,6 @@ search_tool = Tool(
     func=top3_results,
 )
 
-
 if __name__ == "__main__":
     query = "Moroccan"
     results = search_tool.run(query)
@@ -41,5 +40,4 @@ if __name__ == "__main__":
     site_contents = fetch_url_content.invoke({"url": results[0]["link"]}).replace(
         "\n", " "
     )
-
     print(site_contents)
