@@ -22,9 +22,11 @@ def read_sql_file(filename):
         first_line = sql.splitlines()[0]
         if first_line.startswith("CREATE TABLE"):
             parts = first_line.split()
-            table_name = parts[2].strip('(')
+            table_name = parts[2].strip("(")
             # Replace first line with CREATE TABLE IF NOT EXISTS project.dataset.table
-            new_first_line = f"CREATE TABLE IF NOT EXISTS `{PROJECT_ID}.{DATASET_ID}.{table_name}` ("
+            new_first_line = (
+                f"CREATE TABLE IF NOT EXISTS `{PROJECT_ID}.{DATASET_ID}.{table_name}` ("
+            )
             sql = sql.replace(first_line, new_first_line, 1)
         return sql
 

@@ -1,7 +1,10 @@
 from google.cloud import secretmanager
 import os
 
-def get_gcp_secret(secret_id: str, version: str = "latest", project_id: str = None) -> str:
+
+def get_gcp_secret(
+    secret_id: str, version: str = "latest", project_id: str = None
+) -> str:
     """
     Fetch a secret value from Google Cloud Secret Manager.
     Args:
