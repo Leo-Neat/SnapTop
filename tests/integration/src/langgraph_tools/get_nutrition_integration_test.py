@@ -1,5 +1,5 @@
 import pytest
-from src.langgraph_tools.get_nutrition import get_nutrition
+from src.langgraph_tools.nutrition import get_nutrition
 
 
 @pytest.mark.parametrize("query", ["apple", "chickpeas", "tofu", "quinoa"])

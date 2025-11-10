@@ -86,8 +86,18 @@ See `bigquery/` for table schemas and a Python script to create tables from SQL 
 ## Developer Workflow
 - Install dependencies: `uv pip install`
 - Generate proto code: `make protos`
+- Lint changed Python files: `make lint`
+- Format changed Python files: `make format`
+- Auto-fix linting issues: `make fix`
 - Run agents/tools: `uv run src/agents/recipe_agent.py`
 - Set up GCP credentials and Secret Manager for API keys
+
+## Testing & Integration Tests
+- Run all integration tests: `pytest tests/integration`
+- Example integration tests:
+  - `tests/integration/src/langgraph_tools/get_nutrition_integration_test.py`: Validates FatSecret nutrition API tool (see `src/langgraph_tools/nutrition.py`)
+  - `tests/integration/src/langgraph_tools/recipe_search_integration_test.py`: Validates recipe search and web content fetching
+  - `tests/integration/src/common/llm_integration_test.py`: Validates Gemini LLM integration
 
 ## Security & Compliance
 - All API keys and credentials are managed via GCP Secret Manager

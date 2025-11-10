@@ -1,9 +1,10 @@
 import os
 from google.cloud import bigquery
+from src.common.utils import get_project_name, get_bigquery_dataset_name
 
 # Set your GCP project ID and dataset
-PROJECT_ID = os.getenv("GCP_PROJECT_ID", "recipellm")
-DATASET_ID = os.getenv("BIGQUERY_DATASET", "mealprep")
+PROJECT_ID = get_project_name()
+DATASET_ID = get_bigquery_dataset_name()
 
 SQL_FILES = {
     "users": "users.sql",

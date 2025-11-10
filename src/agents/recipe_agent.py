@@ -1,4 +1,4 @@
-from src.langgraph_tools.get_nutrition import get_nutrition
+from src.langgraph_tools.nutrition import get_nutrition
 from src.langgraph_tools.google_search import search_tool, fetch_url_content
 from langchain.agents import create_agent
 from common.llms import get_gemini_flash
