@@ -1,0 +1,34 @@
+import "google/protobuf/timestamp.proto";
+syntax = "proto3";
+
+message MealPlan {
+  string meal_plan_id = 1;
+  string user_id = 2;
+  repeated Meal meals = 3;
+}
+
+enum MealType {
+  MEAL_TYPE_UNSPECIFIED = 0;
+  BREAKFAST = 1;
+  LUNCH = 2;
+  DINNER = 3;
+  DESSERT = 4;
+  SNACK = 5;
+}
+
+message Meal {
+  string meal_id = 1;
+  string title = 2;
+  optional string recipe_id = 3;
+  int32 target_calories_per_serving = 4;
+  int32 servings = 5;
+  MacroPercentages macro_percentages = 6;
+  repeated google.protobuf.Timestamp dates = 7; // Dates for planned usage
+  MealType meal_type = 8;
+}
+
+message MacroPercentages {
+  float protein_percent = 1;
+  float carb_percent = 2;
+  float fat_percent = 3;
+}

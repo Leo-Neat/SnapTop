@@ -95,7 +95,7 @@ See `bigquery/` for table schemas and a Python script to create tables from SQL 
 ## Testing & Integration Tests
 - Run all integration tests: `pytest tests/integration`
 - Example integration tests:
-  - `tests/integration/src/langgraph_tools/get_nutrition_integration_test.py`: Validates FatSecret nutrition API tool
+  - `tests/integration/src/langgraph_tools/get_nutrition_integration_test.py`: Validates FatSecret nutrition API tool (see `src/langgraph_tools/nutrition.py`)
   - `tests/integration/src/langgraph_tools/recipe_search_integration_test.py`: Validates recipe search and web content fetching
   - `tests/integration/src/common/llm_integration_test.py`: Validates Gemini LLM integration
 

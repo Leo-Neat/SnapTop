@@ -17,25 +17,29 @@ protos: $(PROTO_DIR)/*.proto
 clean:
 	rm -rf $(PY_OUT)
 
-# Python lint/format only on changed files from main
-CHANGED_PY_FILES=$(shell git diff --name-only main...HEAD | grep '\.py$$' | xargs)
+
+# Python lint/format/fix only on changed and tracked Python files from main (exclude deleted)
+CHANGED_PY_FILES=$(shell git diff --name-only main...HEAD | grep '\.py$$' | xargs -r git ls-files --error-unmatch 2>/dev/null | xargs)
+
 
 lint:
-ifdef CHANGED_PY_FILES
+ifneq ($(strip $(CHANGED_PY_FILES)),)
 	ruff check $(CHANGED_PY_FILES)
 else
 	echo "No changed Python files to lint."
 endif
 
+
 format:
-ifdef CHANGED_PY_FILES
+ifneq ($(strip $(CHANGED_PY_FILES)),)
 	ruff format $(CHANGED_PY_FILES)
 else
 	echo "No changed Python files to format."
 endif
 
+
 fix:
-ifdef CHANGED_PY_FILES
+ifneq ($(strip $(CHANGED_PY_FILES)),)
 	ruff check --fix $(CHANGED_PY_FILES)
 else
 	echo "No changed Python files to fix."
