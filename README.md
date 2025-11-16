@@ -86,6 +86,7 @@ See `bigquery/` for table schemas and a Python script to create tables from SQL 
 ## Developer Workflow
 - Install dependencies: `uv pip install`
 - Generate proto code: `make protos`
+- Generate Pydantic models for all proto files: `make pydantic-models`
 - Lint changed Python files: `make lint`
 - Format changed Python files: `make format`
 - Auto-fix linting issues: `make fix`

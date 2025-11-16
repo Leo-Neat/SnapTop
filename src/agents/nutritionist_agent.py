@@ -5,6 +5,8 @@
 from src.langgraph_tools.nutrition import get_macronutrient_distribution, get_reccomended_daily_calorie_intake
 from langchain.agents import create_agent
 from src.common.llms import get_gemini_flash
+from src.mealprep.proto.meal_plan_p2p import MealPlan
+from pydantic import ValidationError
 import json
 
 
@@ -14,71 +16,8 @@ system_prompt = (
     "You are a certified nutritionist tasked with creating a single, shared meal plan for all provided individuals, "
     "based on their demographics, activity levels, and dietary restrictions. Minimize the number of unique recipes required by reusing meals across days and people whenever possible. "
     "You will use the nutrition tools provided to calculate daily caloric needs and macronutrient distributions. "
-    "Your output must include a structured meal plan with serving sizes for each meal over the specified number of days. "
-    "Ensure that the meal plans are balanced, nutritious, and tailored to the specific needs of each individual. "
-    "DO NOT PROVIDE FOODS OR RECIPES, just the meal plan structure and macronutrient breakdowns. "
-    "\n\n"
-    "Your output MUST be a valid JSON object matching the following structure, which can be parsed into the MealPlan proto:\n"
-    "{\n"
-    "  \"meal_plan_id\": \"string\",\n"
-    "  \"user_id\": \"string\",\n"
-    "  \"meals\": [\n"
-    "    {\n"
-    "      \"meal_id\": \"string\",\n"
-    "      \"title\": \"string\",\n"
-    "      \"recipe_id\": \"string (optional)\",\n"
-    "      \"target_calories_per_serving\": int,\n"
-    "      \"servings\": int,\n"
-    "      \"macro_percentages\": {\n"
-    "        \"protein_percent\": float,\n"
-    "        \"carb_percent\": float,\n"
-    "        \"fat_percent\": float\n"
-    "      },\n"
-    "      \"dates\": [\n"
-    "        \"YYYY-MM-DDTHH:MM:SSZ\"\n"
-    "      ],\n"
-    "      \"meal_type\": \"BREAKFAST|LUNCH|DINNER|DESSERT|SNACK\"\n"
-    "    }\n"
-    "  ]\n"
-    "}\n"
-    "\nExample Output:\n"
-    "{\n"
-    "  \"meal_plan_id\": \"plan123\",\n"
-    "  \"user_id\": \"user456\",\n"
-    "  \"meals\": [\n"
-    "    {\n"
-    "      \"meal_id\": \"meal1\",\n"
-    "      \"title\": \"Breakfast Day 1\",\n"
-    "      \"target_calories_per_serving\": 350,\n"
-    "      \"servings\": 2,\n"
-    "      \"macro_percentages\": {\n"
-    "        \"protein_percent\": 20.0,\n"
-    "        \"carb_percent\": 60.0,\n"
-    "        \"fat_percent\": 20.0\n"
-    "      },\n"
-    "      \"dates\": [\n"
-    "        \"2025-11-10T08:00:00Z\",\n"
-    "        \"2025-11-11T08:00:00Z\"\n"
-    "      ],\n"
-    "      \"meal_type\": \"BREAKFAST\"\n"
-    "    },\n"
-    "    {\n"
-    "      \"meal_id\": \"meal2\",\n"
-    "      \"title\": \"Lunch Day 1\",\n"
-    "      \"target_calories_per_serving\": 500,\n"
-    "      \"servings\": 2,\n"
-    "      \"macro_percentages\": {\n"
-    "        \"protein_percent\": 25.0,\n"
-    "        \"carb_percent\": 55.0,\n"
-    "        \"fat_percent\": 20.0\n"
-    "      },\n"
-    "      \"dates\": [\n"
-    "        \"2025-11-10T12:00:00Z\"\n"
-    "      ],\n"
-    "      \"meal_type\": \"LUNCH\"\n"
-    "    }\n"
-    "  ]\n"
-    "}\n"
+    "Your output must be a valid JSON object matching the MealPlan schema. Dates must be ISO8601 strings or RFC3339 timestamps. "
+    "If you make a mistake, you will be asked to fix it."
 )
 
 llm = get_gemini_flash()
@@ -90,30 +29,30 @@ agent = create_agent(tools=nutritionist_toolkit, model=llm, debug=True)
 
 
 
-import json
+
 if __name__ == "__main__":
+    user_query = (
+        "Create a 4-day meal plan for 2 individuals:\n"
+        " Person 1: 30-year-old female , 65kg, 165cm, moderate activity level, vegetarian.\n"
+        " Person 2: 40-year-old male, 80kg, 180cm, light activity level, gluten-free.\n"
+        " The meal plan should include breakfast, lunch, dinner, and snacks for each day."
+    )
     result = agent.invoke(
         {
             "messages": [
                 {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": (
-                        "Create a 4-day meal plan for 2 individuals:\n"
-                        " Person 1: 30-year-old female , 65kg, 165cm, moderate activity level, vegetarian.\n"
-                        " Person 2: 40-year-old male, 80kg, 180cm, light activity level, gluten-free.\n"
-                        " The meal plan should include breakfast, lunch, dinner, and snacks for each day."
-                    ),
-                },
+                {"role": "user", "content": user_query},
             ]
         }
     )
+    raw_output = result["messages"][-1].content
     print("Raw agent output:")
-    print(result['messages'][-1].content)
-    imputed_output = result['messages'][-1].content
+    print(raw_output)
     try:
-        meal_plan = json.loads(imputed_output)
-        print("Parsed Meal Plan JSON:")
-        print(json.dumps(meal_plan, indent=2))
-    except json.JSONDecodeError as e:
-        print("Failed to parse JSON from agent output:", e)
+        meal_plan = MealPlan.model_validate_json(raw_output)
+        print("Validated MealPlan (Pydantic):")
+        print(meal_plan.model_dump_json(indent=2))
+    except ValidationError as e:
+        print("Failed to validate agent output against MealPlan schema:", e)
+    except Exception as e:
+        print("Failed to parse agent output:", e)
