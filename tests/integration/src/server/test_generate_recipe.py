@@ -1,7 +1,11 @@
 import grpc
 import sys
-import time
-from src.mealprep.proto import mealprep_service_pb2_grpc, mealprep_service_pb2, recipe_pb2
+from src.mealprep.proto import (
+    mealprep_service_pb2_grpc,
+    mealprep_service_pb2,
+    recipe_pb2,
+)
+
 
 def test_generate_recipe():
     channel = grpc.insecure_channel("localhost:50051")
@@ -29,6 +33,7 @@ def test_generate_recipe():
         print(response)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
+
 
 if __name__ == "__main__":
     test_generate_recipe()
