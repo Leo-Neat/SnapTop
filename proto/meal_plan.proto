@@ -1,10 +1,11 @@
-import "google/protobuf/timestamp.proto";
+
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 message MealPlan {
   string meal_plan_id = 1;
   string user_id = 2;
-  repeated Meal meals = 3;
+  repeated RecipeSkeleton recipes = 3;
 }
 
 enum MealType {
@@ -16,15 +17,19 @@ enum MealType {
   SNACK = 5;
 }
 
-message Meal {
-  string meal_id = 1;
+message RecipeSkeleton {
+  string skeleton_id = 1;
   string title = 2;
   optional string recipe_id = 3;
   int32 target_calories_per_serving = 4;
   int32 servings = 5;
   MacroPercentages macro_percentages = 6;
-  repeated google.protobuf.Timestamp dates = 7; // Dates for planned usage
+  map<string, DatesForPerson> dates = 7; // person_id -> DatesForPerson
   MealType meal_type = 8;
+}
+
+message DatesForPerson {
+  repeated google.protobuf.Timestamp dates = 1;
 }
 
 message MacroPercentages {
