@@ -1,6 +1,8 @@
+
 syntax = "proto3";
 
-package mealprep;
+package mealprep.proto;
+
 
 message ShoppingList {
   string meal_plan_id = 1;
