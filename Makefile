@@ -4,7 +4,10 @@
 PROTO_DIR=proto
 PY_OUT=src/mealprep/proto
 PYDANTIC_OUT=src/mealprep/pydantic_models.py
+
 PYTHON=python3
+
+.DEFAULT_GOAL := pydantic-models
 
 protos: $(PROTO_DIR)/*.proto
 	mkdir -p $(PY_OUT)
@@ -15,7 +18,8 @@ protos: $(PROTO_DIR)/*.proto
 		$(PROTO_DIR)/user.proto \
 		$(PROTO_DIR)/recipe.proto \
 		$(PROTO_DIR)/shopping.proto \
-		$(PROTO_DIR)/meal_plan.proto
+		$(PROTO_DIR)/meal_plan.proto \
+		$(PROTO_DIR)/mealprep_service.proto
 
 # Generate Pydantic models from all .proto files using protobuf-to-pydantic plugin
 pydantic-models: protos

@@ -1,6 +1,7 @@
+
 syntax = "proto3";
 
-package mealprep;
+package mealprep.proto;
 
 import "user.proto";
 import "recipe.proto";
@@ -11,6 +12,15 @@ service MealPrepService {
   rpc RegenerateRecipe (RegenerateRecipeRequest) returns (Recipe);
   rpc ModifyRecipe (ModifyRecipeRequest) returns (Recipe);
   rpc GetShoppingList (GetShoppingListRequest) returns (ShoppingList);
+  rpc GenerateRecipe (GenerateRecipeRequest) returns (Recipe);
+}
+
+
+message GenerateRecipeRequest {
+  string description = 1;
+  NutritionProfile target_macros = 2; // optional
+  repeated Ingredient available_ingredients = 3; // optional
+  string complexity = 4; // optional, e.g. "easy", "medium", "hard" or a freeform description
 }
 
 message GenerateWeeklyMealsRequest {
