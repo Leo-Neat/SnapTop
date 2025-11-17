@@ -1,13 +1,10 @@
 import grpc
 from concurrent import futures
 from src.mealprep.proto import mealprep_service_pb2_grpc
-from src.mealprep.proto import meal_plan_pb2, recipe_pb2, shopping_pb2, user_pb2
-from src.mealprep.proto.meal_plan_p2p import MealPlan
-from src.mealprep.proto.recipe_p2p import Recipe
-from src.mealprep.proto.shopping_p2p import ShoppingList
-from src.mealprep.proto.user_p2p import UserProfile
+from src.mealprep.proto import meal_plan_pb2, recipe_pb2, shopping_pb2
 import logging
 from src.agents.recipe_agent import agent, system_prompt
+
 
 class MealPrepServiceServicer(mealprep_service_pb2_grpc.MealPrepServiceServicer):
     def GenerateWeeklyMeals(self, request, context):
@@ -41,7 +38,6 @@ class MealPrepServiceServicer(mealprep_service_pb2_grpc.MealPrepServiceServicer)
 
     def GenerateRecipe(self, request, context):
         # Wire to recipe agent
-   
 
         # Build a single prompt string from all request fields
         prompt_lines = []
@@ -73,7 +69,11 @@ class MealPrepServiceServicer(mealprep_service_pb2_grpc.MealPrepServiceServicer)
         if request.available_ingredients:
             ing_list = []
             for ing in request.available_ingredients:
-                ing_desc = f"{ing.quantity} {ing.unit} {ing.name}" if ing.unit else f"{ing.quantity} {ing.name}"
+                ing_desc = (
+                    f"{ing.quantity} {ing.unit} {ing.name}"
+                    if ing.unit
+                    else f"{ing.quantity} {ing.name}"
+                )
                 if ing.notes:
                     ing_desc += f" ({ing.notes})"
                 ing_list.append(ing_desc)
@@ -91,7 +91,11 @@ class MealPrepServiceServicer(mealprep_service_pb2_grpc.MealPrepServiceServicer)
         result = agent.invoke(agent_input)
         recipe_obj = result["structured_response"]
         # Convert Pydantic Recipe to proto
-        recipe_proto = recipe_obj.to_proto() if hasattr(recipe_obj, "to_proto") else recipe_pb2.Recipe(**recipe_obj.model_dump())
+        recipe_proto = (
+            recipe_obj.to_proto()
+            if hasattr(recipe_obj, "to_proto")
+            else recipe_pb2.Recipe(**recipe_obj.model_dump())
+        )
         return recipe_proto
 
 
@@ -100,10 +104,11 @@ def serve():
     mealprep_service_pb2_grpc.add_MealPrepServiceServicer_to_server(
         MealPrepServiceServicer(), server
     )
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port("[::]:50051")
     logging.info("Starting gRPC server on port 50051...")
     server.start()
     server.wait_for_termination()
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
