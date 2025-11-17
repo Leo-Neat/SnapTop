@@ -2,13 +2,13 @@
 # It also takes in a number of days and meals per day between breakfast, lunch, dinner, snack and dessert.
 # It outputs a structured macronutrtient set and seving sizes for each meal over the number of days specified.
 # For example 4 days 3 meals per day, might output a rule for dinner 1 that can be used 3 times and a rule for dinner 2 which can be used once.
-from src.langgraph_tools.nutrition import get_macronutrient_distribution, get_reccomended_daily_calorie_intake
+from src.langgraph_tools.nutrition import (
+    get_macronutrient_distribution,
+    get_reccomended_daily_calorie_intake,
+)
 from langchain.agents import create_agent
 from src.common.llms import get_gemini_flash
 from src.mealprep.proto.meal_plan_p2p import MealPlan
-from pydantic import ValidationError
-import json
-
 
 
 # System prompt for the nutritionist agent
@@ -23,12 +23,13 @@ system_prompt = (
 llm = get_gemini_flash()
 
 
-nutritionist_toolkit = [get_reccomended_daily_calorie_intake, get_macronutrient_distribution]
-agent = create_agent(tools=nutritionist_toolkit, model=llm, debug=True, response_format=MealPlan)
-
-
-
-
+nutritionist_toolkit = [
+    get_reccomended_daily_calorie_intake,
+    get_macronutrient_distribution,
+]
+agent = create_agent(
+    tools=nutritionist_toolkit, model=llm, debug=True, response_format=MealPlan
+)
 
 
 if __name__ == "__main__":

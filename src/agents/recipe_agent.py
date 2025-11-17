@@ -1,10 +1,8 @@
-
 from src.langgraph_tools.nutrition import get_nutrition
 from src.langgraph_tools.recipe_search import fetch_url_content, search_tool
 from langchain.agents import create_agent
 from src.common.llms import get_gemini_flash
 from src.mealprep.proto.recipe_p2p import Recipe
-from pydantic import ValidationError
 
 # System prompt for the agent
 system_prompt = (
@@ -27,7 +25,9 @@ llm = get_gemini_flash(system_prompt=system_prompt)
 
 recipe_toolkit = [search_tool, fetch_url_content, get_nutrition]
 
-agent = create_agent(tools=recipe_toolkit, model=llm, debug=True, response_format=Recipe)
+agent = create_agent(
+    tools=recipe_toolkit, model=llm, debug=True, response_format=Recipe
+)
 
 
 if __name__ == "__main__":
