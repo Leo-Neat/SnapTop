@@ -24,7 +24,8 @@ llm = get_gemini_flash()
 
 
 nutritionist_toolkit = [get_reccomended_daily_calorie_intake, get_macronutrient_distribution]
-agent = create_agent(tools=nutritionist_toolkit, model=llm, debug=True)
+agent = create_agent(tools=nutritionist_toolkit, model=llm, debug=True, response_format=MealPlan)
+
 
 
 
@@ -45,14 +46,6 @@ if __name__ == "__main__":
             ]
         }
     )
-    raw_output = result["messages"][-1].content
-    print("Raw agent output:")
-    print(raw_output)
-    try:
-        meal_plan = MealPlan.model_validate_json(raw_output)
-        print("Validated MealPlan (Pydantic):")
-        print(meal_plan.model_dump_json(indent=2))
-    except ValidationError as e:
-        print("Failed to validate agent output against MealPlan schema:", e)
-    except Exception as e:
-        print("Failed to parse agent output:", e)
+    meal_plan = result["structured_response"]  # structured object, already validated
+    print("✅ Structured MealPlan object:")
+    print(meal_plan.model_dump_json(indent=2))

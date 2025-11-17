@@ -1,3 +1,13 @@
+### 0. Python Path Setup
+- Before running any code, export the root directory of this repo to your PYTHONPATH to ensure imports work:
+  ```bash
+  export PYTHONPATH="$(pwd):$PYTHONPATH"
+  ```
+- To avoid repeating this step, add the following line to your `~/.bashrc` or `~/.zshrc`:
+  ```bash
+  export PYTHONPATH="/path/to/your/repo:$PYTHONPATH"
+  ```
+  Replace `/path/to/your/repo` with the absolute path to this repository.
 # AI Meal Prep System
 
 ## TODO List
@@ -83,15 +93,69 @@ message Recipe {
 ## BigQuery Table Creation
 See `bigquery/` for table schemas and a Python script to create tables from SQL files using the Google Cloud BigQuery API.
 
-## Developer Workflow
-- Install dependencies: `uv pip install`
-- Generate proto code: `make protos`
-- Generate Pydantic models for all proto files: `make pydantic-models`
-- Lint changed Python files: `make lint`
-- Format changed Python files: `make format`
-- Auto-fix linting issues: `make fix`
-- Run agents/tools: `uv run src/agents/recipe_agent.py`
-- Set up GCP credentials and Secret Manager for API keys
+## Setup & Developer Workflow
+
+### 1. Environment Setup
+- Install [uv](https://github.com/astral-sh/uv):
+  ```bash
+  pip install uv
+  # or follow uv docs for your platform
+  ```
+- Create a Python virtual environment (recommended):
+  ```bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+  ```
+
+### 2. Install Dependencies
+- Install all project dependencies using uv:
+  ```bash
+  uv pip install -r requirements.txt
+  # or if using pyproject.toml:
+  uv pip install
+  ```
+
+
+### 3. Build & Code Generation
+- If your virtual environment is not active, prefix Makefile commands with `uv run`:
+  ```bash
+  uv run make protos
+  uv run make pydantic-models
+  uv run make lint
+  uv run make format
+  uv run make fix
+  ```
+- If your venv is active, you can use `make ...` directly:
+  ```bash
+  make protos
+  make pydantic-models
+  make lint
+  make format
+  make fix
+  ```
+
+### 4. Code Quality
+- Lint changed Python files:
+  ```bash
+  make lint
+  ```
+- Format changed Python files:
+  ```bash
+  make format
+  ```
+- Auto-fix linting issues:
+  ```bash
+  make fix
+  ```
+
+### 5. Running Agents & Tools
+- Run agents/tools (example):
+  ```bash
+  uv run src/agents/recipe_agent.py
+  ```
+
+### 6. Cloud Credentials
+- Set up GCP credentials and Secret Manager for API keys as described in the cloud integration section.
 
 ## Testing & Integration Tests
 - Run all integration tests: `pytest tests/integration`
