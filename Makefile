@@ -9,12 +9,26 @@ PYTHON=python3
 
 .DEFAULT_GOAL := pydantic-models
 
+
+BACKEND_GEN=backend/generated
+FRONTEND_GEN=frontend/generated
+
 protos: $(PROTO_DIR)/*.proto
-	mkdir -p $(PY_OUT)
+	mkdir -p $(BACKEND_GEN)
+	mkdir -p $(FRONTEND_GEN)
 	$(PYTHON) -m grpc_tools.protoc \
 		-I$(PROTO_DIR) \
-		--python_out=$(PY_OUT) \
-		--grpc_python_out=$(PY_OUT) \
+		--python_out=$(BACKEND_GEN) \
+		--grpc_python_out=$(BACKEND_GEN) \
+		$(PROTO_DIR)/user.proto \
+		$(PROTO_DIR)/recipe.proto \
+		$(PROTO_DIR)/shopping.proto \
+		$(PROTO_DIR)/meal_plan.proto \
+		$(PROTO_DIR)/mealprep_service.proto
+	$(PYTHON) -m grpc_tools.protoc \
+		-I$(PROTO_DIR) \
+		--python_out=$(FRONTEND_GEN) \
+		--grpc_python_out=$(FRONTEND_GEN) \
 		$(PROTO_DIR)/user.proto \
 		$(PROTO_DIR)/recipe.proto \
 		$(PROTO_DIR)/shopping.proto \
@@ -22,13 +36,19 @@ protos: $(PROTO_DIR)/*.proto
 		$(PROTO_DIR)/mealprep_service.proto
 
 # Generate Pydantic models from all .proto files using protobuf-to-pydantic plugin
+PYDANTIC_BACKEND=$(BACKEND_GEN)
+PYDANTIC_FRONTEND=$(FRONTEND_GEN)
+
 pydantic-models: protos
 	for file in $(PROTO_DIR)/*.proto; do \
-		$(PYTHON) -m grpc_tools.protoc -I$(PROTO_DIR) --protobuf-to-pydantic_out=$(PY_OUT) $$file; \
+		$(PYTHON) -m grpc_tools.protoc -I$(PROTO_DIR) --protobuf-to-pydantic_out=$(PYDANTIC_BACKEND) $$file; \
+		$(PYTHON) -m grpc_tools.protoc -I$(PROTO_DIR) --protobuf-to-pydantic_out=$(PYDANTIC_FRONTEND) $$file; \
 	done
 
 clean:
 	rm -rf $(PY_OUT)
+	rm -rf $(BACKEND_GEN)
+	rm -rf $(FRONTEND_GEN)
 	rm -f $(PYDANTIC_OUT)
 
 # Python lint/format/fix only on changed and tracked Python files from main (exclude deleted)
