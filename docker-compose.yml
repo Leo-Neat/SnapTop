@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  # Backend gRPC server
+  # Backend FastAPI server
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "50051:50051"
+      - "8000:8000"
     env_file:
       - .env
     environment:
@@ -17,20 +17,7 @@ services:
     networks:
       - recipe-network
 
-  # Envoy proxy for gRPC-web
-  envoy:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile.envoy
-    ports:
-      - "8080:8080"
-      - "9901:9901"
-    networks:
-      - recipe-network
-    depends_on:
-      - backend
-
-  # Frontend development server (optional, for development)
+  # Frontend development server
   frontend:
     image: node:20-slim
     platform: linux/amd64
@@ -46,7 +33,7 @@ services:
     networks:
       - recipe-network
     depends_on:
-      - envoy
+      - backend
 
 networks:
   recipe-network:

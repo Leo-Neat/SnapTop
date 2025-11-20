@@ -29,6 +29,17 @@ const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onBack }) => {
             )}
           </div>
 
+          {/* Recipe Image */}
+          {recipe.imageBase64 && (
+            <div className="w-full">
+              <img
+                src={`data:image/png;base64,${recipe.imageBase64}`}
+                alt={recipe.title}
+                className="w-full h-96 object-cover"
+              />
+            </div>
+          )}
+
           {/* Meta Info */}
           <div className="grid grid-cols-3 gap-4 p-6 bg-gray-50 border-b">
             <div className="text-center">

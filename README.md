@@ -1,10 +1,10 @@
 
-# AI Meal Prep System
+# SnapTop - AI Meal Prep System
 
 ## Project Overview
 SnapTop is a multi-agent meal planning system designed to generate personalized weekly meal plans, recipes, nutritional analysis, and shopping lists. It features:
 - Modular agent architecture (planner, nutritionist, chef, validator)
-- gRPC API for frontend integration
+- FastAPI REST API with Pydantic models
 - Persistent storage in Google Cloud BigQuery
 - Human-in-the-loop approval and modification at every stage
 
@@ -14,85 +14,111 @@ SnapTop is a multi-agent meal planning system designed to generate personalized 
 snaptop/
 ├── backend/
 │   ├── src/
-│   ├── generated/
-│   └── README.md
+│   │   ├── models/          # Pydantic data models
+│   │   ├── server/          # FastAPI server
+│   │   ├── agents/          # AI agents
+│   │   └── langgraph_tools/ # LangGraph tools
+│   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   ├── generated/
-│   └── README.md
-├── protos/
-│   └── api/v1/
-├── bigquery/
+│   │   ├── RecipeForm.tsx
+│   │   ├── RecipeDisplay.tsx
+│   │   └── grpcClient.ts    # API client
+│   └── package.json
+├── bigquery/                # BigQuery schemas
 ├── Makefile
-├── README.md
+├── docker-compose.yml
+└── pyproject.toml
 ```
 
-- `backend/`: Python backend, agents, gRPC server, codegen outputs
-- `frontend/`: Frontend code and generated proto models
-- `protos/api/v1/`: Protocol Buffer schemas for API messages
+- `backend/`: Python FastAPI backend with AI agents
+- `frontend/`: React + TypeScript frontend
 - `bigquery/`: BigQuery table schemas and creation scripts
-- `Makefile`: Build and codegen automation
+- `Makefile`: Linting, formatting, and development commands
 
-## Quick Start & Project Setup
+## Quick Start
 
-### 1. Clone the Repository
+### Using Docker Compose (Recommended)
+
 ```bash
-git clone <repo-url>
-cd snaptop
+# Start all services
+docker-compose up --build
+
+# Or use the Makefile
+make dev
 ```
 
-### 2. Python Path Setup
-To ensure all imports work, add the following to your shell rc file (`~/.bashrc` or `~/.zshrc`):
-```bash
-export PYTHONPATH="/absolute/path/to/snaptop:/absolute/path/to/snaptop/backend/generated:/absolute/path/to/snaptop/frontend/generated:$PYTHONPATH"
-```
-Replace `/absolute/path/to/snaptop` with the full path to your repo.
-After editing, reload your shell:
-```bash
-source ~/.bashrc   # or source ~/.zshrc
-```
+Services will be available at:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs (interactive Swagger UI)
 
-### 3. Python Environment Setup
-Install [uv](https://github.com/astral-sh/uv) and create a virtual environment:
+### Local Development
+
+#### Backend
+
 ```bash
+# Install uv if you don't have it
 pip install uv
-python3 -m venv .venv
-source .venv/bin/activate
+
+# Install dependencies
+uv sync
+
+# Run the server
+uv run python -m backend.src.server.fastapi_server
 ```
 
-### 4. Install Dependencies
+Backend runs on http://localhost:8000
+
+#### Frontend
+
 ```bash
-uv pip install -r requirements.txt
-# or if using pyproject.toml:
-uv pip install
+cd frontend
+npm install
+npm run dev
 ```
 
-### 5. Build & Code Generation
-Generate proto and Pydantic code for backend and frontend:
+Frontend runs on http://localhost:3000
+
+## API Endpoints
+
+- `POST /api/recipes/generate` - Generate a new recipe (✅ working)
+- `POST /api/meals/generate-weekly` - Generate weekly meal plan (stub)
+- `POST /api/recipes/regenerate` - Regenerate a recipe (stub)
+- `POST /api/recipes/modify` - Modify a recipe (stub)
+- `POST /api/shopping-list/generate` - Generate shopping list (stub)
+
+See http://localhost:8000/docs for full interactive API documentation.
+
+## Development
+
+### Code Quality
+
 ```bash
-make protos
-make pydantic-models
+# Format Python code
+make format
+
+# Fix Python linting issues
+make fix
+
+# Run full lint check
+make lint
 ```
 
-### 6. Run the Backend gRPC Server
-Start the backend server (ensure your venv is active and PYTHONPATH is set):
+### Testing
+
 ```bash
-uv run backend/src/server/grpc_server.py
-# or
-python backend/src/server/grpc_server.py
+make test
 ```
-The server runs on port 50051 by default. Proto definitions are in `protos/api/v1/`.
 
-### 7. Frontend Setup
-See `frontend/README.md` for frontend instructions and codegen usage.
+## Migration from gRPC
 
-### 8. BigQuery Setup
-See `bigquery/` for table schemas and setup scripts.
+This project was recently migrated from gRPC to FastAPI. See [MIGRATION.md](./MIGRATION.md) for details.
 
 ## More Information
-- Backend implementation details: `backend/README.md`
-- Frontend implementation details: `frontend/README.md`
-- Protocol Buffers: `protos/api/v1/`
+
+- Backend implementation: `backend/README.md`
+- Frontend implementation: `frontend/README.md`
+- Migration guide: `MIGRATION.md`
 - BigQuery schemas: `bigquery/`
-- Build/codegen: `Makefile`
 

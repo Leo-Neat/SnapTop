@@ -32,6 +32,7 @@ export interface Recipe {
   servings: number;
   servingSize?: string;
   citations?: string[];
+  imageBase64?: string;
 }
 
 export interface GenerateRecipeRequest {

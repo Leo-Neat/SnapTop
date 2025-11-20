@@ -1,66 +1,82 @@
 import { Recipe, GenerateRecipeRequest } from './types';
 
-// For now, we'll use a simple fetch-based approach to communicate with the gRPC backend
-// through an Envoy proxy that translates HTTP/JSON to gRPC
-
-const GRPC_ENDPOINT = 'http://localhost:8080/mealprep.proto.MealPrepService/GenerateRecipe';
+// FastAPI backend endpoint
+const API_ENDPOINT = 'http://localhost:8000/api/recipes/generate';
 
 export async function generateRecipe(request: GenerateRecipeRequest): Promise<Recipe> {
   try {
-    // Convert our request to the format expected by the gRPC service
-    const grpcRequest: any = {
+    // Convert camelCase to snake_case for backend
+    const apiRequest: any = {
       description: request.description,
     };
 
     if (request.complexity) {
-      grpcRequest.complexity = request.complexity;
+      apiRequest.complexity = request.complexity;
     }
 
     if (request.target_macros) {
-      grpcRequest.target_macros = {
-        calories: request.target_macros.calories || 0,
-        proteinGrams: request.target_macros.proteinGrams || 0,
-        carbsGrams: request.target_macros.carbsGrams || 0,
-        fatGrams: request.target_macros.fatGrams || 0,
-        fiberGrams: request.target_macros.fiberGrams || 0,
-        sugarGrams: request.target_macros.sugarGrams || 0,
-        sodiumMg: request.target_macros.sodiumMg || 0,
+      apiRequest.target_macros = {
+        calories: request.target_macros.calories,
+        protein_grams: request.target_macros.proteinGrams,
+        carbs_grams: request.target_macros.carbsGrams,
+        fat_grams: request.target_macros.fatGrams,
+        fiber_grams: request.target_macros.fiberGrams,
+        sugar_grams: request.target_macros.sugarGrams,
+        sodium_mg: request.target_macros.sodiumMg,
       };
     }
 
     if (request.available_ingredients && request.available_ingredients.length > 0) {
-      grpcRequest.available_ingredients = request.available_ingredients.map(ing => ({
-        name: ing.name,
-        quantity: ing.quantity,
-        unit: ing.unit || '',
-        notes: ing.notes || '',
-      }));
+      apiRequest.available_ingredients = request.available_ingredients;
     }
 
-    const response = await fetch(GRPC_ENDPOINT, {
+    const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(grpcRequest),
+      body: JSON.stringify(apiRequest),
     });
 
     console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-    const responseText = await response.text();
-    console.log('Response body:', responseText);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}, body: ${responseText}`);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    if (!responseText) {
-      throw new Error('Empty response from server');
-    }
+    const responseData = await response.json();
+    console.log('Recipe generated:', responseData.title);
 
-    const recipe = JSON.parse(responseText);
-    return recipe as Recipe;
+    // Convert snake_case response to camelCase for frontend
+    const recipe: Recipe = {
+      recipeId: responseData.recipe_id,
+      title: responseData.title,
+      description: responseData.description,
+      ingredients: responseData.ingredients,
+      instructions: responseData.instructions.map((section: any) => ({
+        sectionName: section.section_name,
+        steps: section.steps,
+      })),
+      prepTimeMinutes: responseData.prep_time_minutes,
+      cookTimeMinutes: responseData.cook_time_minutes,
+      nutrition: responseData.nutrition ? {
+        calories: responseData.nutrition.calories,
+        proteinGrams: responseData.nutrition.protein_grams,
+        carbsGrams: responseData.nutrition.carbs_grams,
+        fatGrams: responseData.nutrition.fat_grams,
+        fiberGrams: responseData.nutrition.fiber_grams,
+        sugarGrams: responseData.nutrition.sugar_grams,
+        sodiumMg: responseData.nutrition.sodium_mg,
+      } : undefined,
+      servings: responseData.servings,
+      servingSize: responseData.serving_size,
+      citations: responseData.citations,
+      imageBase64: responseData.image_base64,
+    };
+
+    return recipe;
   } catch (error) {
     console.error('Error generating recipe:', error);
     throw error;

@@ -1,21 +1,20 @@
-# Recipe Generator - Quick Start Guide
+# SnapTop Recipe Generator - Quick Start Guide
 
-This guide will help you get the Recipe Generator web application up and running.
+This guide will help you get the SnapTop Recipe Generator web application up and running.
 
 ## What's Included
 
 - **Frontend**: Modern React + TypeScript web app with Tailwind CSS
-- **Backend**: Python gRPC server with AI recipe generation
-- **Proxy**: Envoy proxy for gRPC-web translation
+- **Backend**: Python FastAPI server with AI recipe generation
 
 ## Prerequisites
 
-- Docker and Docker Compose
-- (Optional) Python 3.12+ and Node.js 18+ for local development
+- Docker and Docker Compose (recommended)
+- OR Python 3.12+ and Node.js 18+ for local development
 
 ## Quick Start with Docker Compose (Recommended)
 
-This is the easiest way to get everything running - all services in containers!
+This is the easiest way to get everything running!
 
 ### 1. Set Up Environment
 
@@ -32,21 +31,23 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 From the project root:
 
 ```bash
-docker-compose build
-docker-compose up
+# Using docker-compose
+docker-compose up --build
+
+# Or using the Makefile
+make dev
 ```
 
 This will start:
-- **Backend**: Python gRPC server on port 50051
-- **Envoy**: gRPC-web proxy on port 8080
+- **Backend**: FastAPI server on port 8000
 - **Frontend**: React dev server on port 3000
 
 ### 3. Access the Application
 
 Open your browser and navigate to:
-```
-http://localhost:3000
-```
+
+- **Frontend**: http://localhost:3000
+- **API Docs**: http://localhost:8000/docs (interactive Swagger UI)
 
 ### 4. View Logs
 
@@ -59,7 +60,6 @@ To see logs from a specific service:
 ```bash
 docker-compose logs -f backend
 docker-compose logs -f frontend
-docker-compose logs -f envoy
 ```
 
 ### 5. Stop Services
@@ -81,22 +81,13 @@ source .venv/bin/activate
 pip install uv
 uv sync
 
-# Export PYTHONPATH
-export PYTHONPATH="$(pwd):$(pwd)/backend/generated:$PYTHONPATH"
-
 # Run the server
-python -m backend.src.server.grpc_server
+uv run python -m backend.src.server.fastapi_server
 ```
 
-### 2. Start Envoy Proxy
+Backend will be available at http://localhost:8000
 
-```bash
-cd frontend
-docker build -f Dockerfile.envoy -t recipe-envoy .
-docker run -d -p 8080:8080 -p 9901:9901 --add-host=host.docker.internal:host-gateway recipe-envoy
-```
-
-### 3. Start Frontend Dev Server
+### 2. Start Frontend Dev Server
 
 ```bash
 cd frontend
@@ -104,12 +95,7 @@ npm install
 npm run dev
 ```
 
-### 4. Access the Application
-
-Open your browser and navigate to:
-```
-http://localhost:3000
-```
+Frontend will be available at http://localhost:3000
 
 ## Using the Application
 
@@ -136,7 +122,7 @@ http://localhost:3000
 
 ### Services Not Starting
 - Make sure Docker is running: `docker ps`
-- Check if ports are already in use: `lsof -i :3000,8080,50051` (or `netstat -tuln`)
+- Check if ports are already in use: `lsof -i :3000,8000` (or `netstat -tuln`)
 - View service logs: `docker-compose logs -f [service-name]`
 - Rebuild containers: `docker-compose build --no-cache`
 
@@ -149,8 +135,8 @@ http://localhost:3000
 ### Frontend Not Connecting
 - Ensure all services are running: `docker-compose ps`
 - Check frontend logs: `docker-compose logs -f frontend`
-- Verify Envoy is running: `docker-compose logs -f envoy`
 - Check browser console for errors
+- Verify backend is accessible: `curl http://localhost:8000/`
 - Try rebuilding: `docker-compose build frontend && docker-compose up`
 
 ### Network Issues
@@ -161,16 +147,17 @@ http://localhost:3000
 ## Ports
 
 - **3000**: Frontend development server
-- **8080**: Envoy gRPC-web proxy
-- **9901**: Envoy admin interface
-- **50051**: Backend gRPC server
+- **8000**: Backend FastAPI server
 
 ## Next Steps
 
 - Customize the UI in `frontend/src/`
 - Modify the recipe agent in `backend/src/agents/recipe_agent.py`
-- Add more gRPC endpoints in `backend/src/server/grpc_server.py`
+- Add more API endpoints in `backend/src/server/fastapi_server.py`
+- Explore the API docs at http://localhost:8000/docs
 
 For more details, see:
+- Main README: `README.md`
+- Migration guide: `MIGRATION.md`
 - Frontend README: `frontend/README.md`
-- Backend documentation: `backend/`
+- Backend documentation: `backend/README.md`
