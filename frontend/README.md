@@ -1,56 +1,46 @@
-# Recipe Generator Frontend
+# SnapTop Frontend
 
-A modern, minimalist web application for generating recipes using AI, built with React, TypeScript, and Tailwind CSS.
+A modern web application for AI-powered recipe generation, built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
-- Clean, modern UI with Tailwind CSS
-- Recipe generation form with optional advanced settings
-- Nutrition targeting (calories, protein, carbs, fat)
-- Ingredient availability specification
-- Beautiful recipe display with step-by-step instructions
-- Back button to generate more recipes
+- 🎨 Clean, modern UI with Tailwind CSS
+- 📝 Recipe generation form with advanced options
+- 🎯 Nutrition targeting (calories, protein, carbs, fat) per serving
+- 🥕 Ingredient availability specification
+- 📖 Beautiful recipe display with step-by-step instructions
+- 🖼️ AI-generated recipe images
+- 📊 Automatic per-serving nutrition calculation
 
 ## Tech Stack
 
 - **React 18** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
-- **Tailwind CSS** - Styling
-- **gRPC-web** - Backend communication via Envoy proxy
-
-## Prerequisites
-
-- Docker and Docker Compose (recommended)
-- OR Node.js 18+ and npm (for local development)
+- **Tailwind CSS** - Utility-first styling
+- **Fetch API** - Backend communication via REST
 
 ## Quick Start
 
-### Option 1: Using Docker Compose (Recommended)
+### Option 1: Docker Compose (Recommended)
 
-The easiest way to run the entire stack (backend, Envoy, and frontend):
+Run the entire stack from the project root:
 
 ```bash
-# From project root
-docker-compose up
+docker-compose up --build
 ```
 
-This starts:
-- Backend gRPC server on port 50051
-- Envoy proxy on port 8080
-- Frontend dev server on port 3000
-
-The application will be available at `http://localhost:3000`
+The frontend will be available at http://localhost:3000
 
 ### Option 2: Local Development
 
-If you want to run the frontend locally while other services are in Docker:
+Run the frontend locally while the backend runs in Docker:
 
-#### 1. Start Backend and Envoy
+#### 1. Start the Backend
 
 ```bash
 # From project root
-docker-compose up backend envoy
+docker-compose up backend
 ```
 
 #### 2. Install Dependencies
@@ -60,130 +50,272 @@ docker-compose up backend envoy
 npm install
 ```
 
-#### 3. Start the Frontend Dev Server
+#### 3. Start the Dev Server
 
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at http://localhost:3000
 
-### Option 3: Manual Setup (All Local)
-
-For full local development without Docker Compose:
-
-#### 1. Start the Backend
-
-```bash
-cd ../
-python -m backend.src.server.grpc_server
-```
-
-#### 2. Start the Envoy Proxy
-
-```bash
-# From frontend directory
-docker build -f Dockerfile.envoy -t recipe-envoy .
-docker run -d -p 8080:8080 -p 9901:9901 --add-host=host.docker.internal:host-gateway recipe-envoy
-```
-
-The Envoy proxy will be available at:
-- gRPC-web endpoint: `http://localhost:8080`
-- Admin interface: `http://localhost:9901`
-
-#### 3. Start the Frontend Dev Server
-
-```bash
-npm install
-npm run dev
-```
-
-The application will be available at `http://localhost:3000`
-
-## Development
-
-### Project Structure
+## Project Structure
 
 ```
 frontend/
 ├── src/
 │   ├── App.tsx              # Main application component
-│   ├── RecipeForm.tsx       # Recipe generation form
+│   ├── RecipeForm.tsx       # Recipe generation form with inputs
 │   ├── RecipeDisplay.tsx    # Recipe display component
-│   ├── grpcClient.ts        # gRPC client communication
+│   ├── grpcClient.ts        # API client (REST, not gRPC anymore)
 │   ├── types.ts             # TypeScript type definitions
 │   ├── main.tsx             # Application entry point
 │   └── index.css            # Global styles with Tailwind
-├── envoy.yaml               # Envoy proxy configuration
-├── Dockerfile.envoy         # Envoy Docker image
-├── vite.config.ts           # Vite configuration
-├── tailwind.config.js       # Tailwind CSS configuration
-└── package.json             # Dependencies and scripts
+├── public/                  # Static assets
+├── vite.config.ts          # Vite configuration
+├── tailwind.config.js      # Tailwind CSS configuration
+├── tsconfig.json           # TypeScript configuration
+├── package.json            # Dependencies and scripts
+└── README.md               # This file
 ```
 
-### Available Scripts
+## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+```bash
+npm run dev        # Start development server (http://localhost:3000)
+npm run build      # Build for production
+npm run preview    # Preview production build
+```
 
 ## How It Works
 
-1. **User Input**: User fills out the recipe generation form with description, complexity, nutrition targets, and available ingredients
-2. **Vite Proxy**: The frontend sends a request to `/grpc/*` which Vite proxies to the Envoy container
-3. **Envoy Proxy**: Envoy translates the gRPC-web request to standard gRPC and forwards it to the backend container on port 50051
-4. **Backend**: The gRPC server processes the request using the recipe agent and returns a Recipe proto
-5. **Response**: Envoy translates the response back to gRPC-web and returns it through the proxy chain
-6. **Display**: The frontend displays the recipe in a beautiful, easy-to-read format
+### Data Flow
 
-**Docker Network Flow** (when using Docker Compose):
-- Browser → `localhost:3000` → Frontend container
-- Frontend → Vite proxy (`/grpc/*`) → Envoy container (`envoy:8080`)
-- Envoy → Backend container (`backend:50051`)
-- All containers communicate on the `recipe-network` Docker network
+1. **User Input**: User fills out the recipe generation form
+   - Recipe description (required)
+   - Complexity level (optional: easy, medium, hard)
+   - Target nutrition per serving (optional)
+   - Available ingredients (optional)
+
+2. **API Request**: Form data is sent to the FastAPI backend
+   - Endpoint: `POST http://localhost:8000/api/recipes/generate`
+   - Format: JSON with snake_case fields
+
+3. **Backend Processing**: The backend's AI agent generates the recipe
+   - Searches for recipe inspiration
+   - Calculates nutrition for entire recipe
+   - Generates an AI image
+
+4. **Response Handling**: Frontend receives and transforms the data
+   - Converts snake_case to camelCase
+   - Calculates per-serving nutrition (divides by servings)
+   - Displays the recipe with image
+
+5. **Recipe Display**: Beautiful presentation of the recipe
+   - Recipe title and description
+   - AI-generated image
+   - Prep/cook times and servings
+   - Ingredients list
+   - Nutrition facts (per serving)
+   - Step-by-step instructions
+   - Citations/sources
+
+### Component Architecture
+
+```
+App.tsx
+├── RecipeForm (onSubmit → generateRecipe)
+│   ├── Basic inputs (description, complexity)
+│   └── Advanced options
+│       ├── Target nutrition inputs
+│       └── Available ingredients manager
+└── RecipeDisplay (recipe, onBack)
+    ├── Recipe header (title, description)
+    ├── Recipe image
+    ├── Meta info (times, servings)
+    ├── Two-column layout
+    │   ├── Ingredients list
+    │   └── Nutrition facts (calculated per serving)
+    └── Instructions by section
+```
+
+## API Integration
+
+### API Client (`grpcClient.ts`)
+
+The `grpcClient.ts` file handles all communication with the backend:
+
+**Request Format:**
+```typescript
+{
+  description: string;           // Required
+  complexity?: string;           // Optional: "easy" | "medium" | "hard"
+  target_macros?: {             // Optional, per serving
+    calories?: number;
+    protein_grams?: number;
+    carbs_grams?: number;
+    fat_grams?: number;
+  };
+  available_ingredients?: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+  }>;
+}
+```
+
+**Response Format:**
+```typescript
+{
+  recipe_id: string;
+  title: string;
+  description: string;
+  ingredients: Array<Ingredient>;
+  instructions: Array<InstructionSection>;
+  prep_time_minutes: number;
+  cook_time_minutes: number;
+  nutrition: NutritionProfile;    // Total for entire recipe
+  servings: number;
+  serving_size?: string;
+  citations?: string[];
+  image_base64?: string;          // Base64 PNG image
+}
+```
+
+### Nutrition Calculation
+
+The backend returns nutrition for the **entire recipe**. The frontend calculates per-serving values:
+
+```typescript
+// Display per-serving nutrition
+const perServingCalories = Math.round(recipe.nutrition.calories / recipe.servings);
+```
+
+## Development
+
+### Type Safety
+
+All data models are defined in `types.ts`:
+- `Recipe` - Complete recipe with all fields
+- `Ingredient` - Individual ingredient
+- `NutritionProfile` - Nutritional information
+- `InstructionSection` - Grouped cooking steps
+- `GenerateRecipeRequest` - API request payload
+
+### Styling
+
+The app uses Tailwind CSS with a custom configuration:
+
+**Color Scheme:**
+- Primary: Blue (`blue-600`, `blue-700`)
+- Background: White and light gray
+- Text: Gray scale for hierarchy
+
+**Responsive Design:**
+- Mobile-first approach
+- Grid layouts for ingredient/nutrition display
+- Responsive navigation and forms
+
+### State Management
+
+Simple React state using `useState`:
+- `recipe` - Currently displayed recipe
+- `loading` - Request in progress
+- `error` - Error message if any
+- Form state for all inputs
 
 ## Troubleshooting
 
-### CORS Errors
+### Backend Connection Issues
 
-If you see CORS errors, make sure the Envoy proxy is running and configured correctly. The `envoy.yaml` file includes CORS configuration.
+**Problem:** "Failed to fetch" or connection errors
 
-### Connection Refused or 500 Errors
-
-When using Docker Compose:
-- Ensure all services are running: `docker-compose ps`
-- Check service logs: `docker-compose logs -f frontend`, `docker-compose logs -f envoy`, `docker-compose logs -f backend`
-- Verify network connectivity: `docker-compose exec frontend ping envoy`
-- Restart services: `docker-compose restart`
-
-When running locally:
-- Ensure the backend gRPC server is running on port 50051
-- Ensure the Envoy proxy is running on port 8080
-- Check that Docker can access `host.docker.internal` (Linux users may need different setup)
+**Solutions:**
+1. Verify backend is running:
+   ```bash
+   curl http://localhost:8000/
+   ```
+2. Check Docker network if using containers
+3. Review browser console for CORS errors
+4. Ensure backend is on port 8000
 
 ### Recipe Not Generating
 
-- Check the browser console for errors
-- Verify the backend is running and accessible
-- Check Envoy admin interface at `http://localhost:9901` for connection status
-- Review backend logs for errors: `docker-compose logs -f backend`
+**Problem:** Form submits but no recipe appears
 
-### Vite Proxy Errors
+**Solutions:**
+1. Check browser console for errors
+2. Verify backend logs:
+   ```bash
+   docker-compose logs -f backend
+   ```
+3. Test API directly:
+   ```bash
+   curl -X POST http://localhost:8000/api/recipes/generate \
+     -H "Content-Type: application/json" \
+     -d '{"description": "pasta with chicken"}'
+   ```
 
-If you see `ENOTFOUND envoy` or similar errors:
-- When using Docker Compose, restart the containers: `docker-compose down && docker-compose up`
-- Ensure the `vite.config.ts` proxy target is set to `http://envoy:8080` (Docker) or `http://localhost:8080` (local)
-- Check that all services are on the same Docker network
+### Image Not Displaying
+
+**Problem:** Recipe displays but no image
+
+**Solutions:**
+1. Check if `imageBase64` is in the response
+2. Verify the base64 string is valid
+3. Check browser console for image load errors
+4. Backend may have failed to generate image (check logs)
+
+### Build Errors
+
+**Problem:** `npm run build` fails
+
+**Solutions:**
+1. Delete `node_modules` and reinstall:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+2. Check TypeScript errors:
+   ```bash
+   npm run build 2>&1 | grep "error TS"
+   ```
+3. Ensure all types are correctly defined
 
 ## Production Build
 
-To build for production:
+Build for production:
 
 ```bash
 npm run build
 ```
 
-The built files will be in the `dist/` directory. You can serve them with any static file server or deploy to platforms like Vercel, Netlify, or AWS S3.
+The optimized files will be in the `dist/` directory.
+
+### Deployment Options
+
+- **Static Hosting**: Deploy to Vercel, Netlify, or AWS S3
+- **Docker**: Use the production container
+- **CDN**: Serve from any CDN with static file support
+
+**Environment Configuration:**
+
+For production, update the API endpoint in `grpcClient.ts`:
+
+```typescript
+const API_ENDPOINT = process.env.VITE_API_URL || 'http://localhost:8000/api/recipes/generate';
+```
+
+Then set the environment variable during build:
+```bash
+VITE_API_URL=https://your-api.com npm run build
+```
+
+## Related Documentation
+
+- [Main README](../README.md) - Project overview
+- [Backend README](../backend/README.md) - Backend development
+- [QUICKSTART](../QUICKSTART.md) - Quick start guide
+- [API Docs](http://localhost:8000/docs) - Interactive API documentation (when running)
 
 ## License
 
