@@ -121,7 +121,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ onSubmit, isLoading }) => {
           {showAdvanced && (
             <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">Target Nutrition (Optional)</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Target Nutrition (Optional)</h3>
+                <p className="text-xs text-gray-500 mb-4">Per serving</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">Calories</label>

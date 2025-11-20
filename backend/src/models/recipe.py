@@ -20,15 +20,15 @@ class InstructionSection(BaseModel):
 
 
 class NutritionProfile(BaseModel):
-    """Nutritional information per serving."""
+    """Nutritional information for the entire recipe (all servings combined)."""
 
-    calories: int | None = Field(None, description="Calories per serving")
-    protein_grams: float | None = Field(None, description="Protein in grams")
-    carbs_grams: float | None = Field(None, description="Carbohydrates in grams")
-    fat_grams: float | None = Field(None, description="Fat in grams")
-    fiber_grams: float | None = Field(None, description="Fiber in grams")
-    sugar_grams: float | None = Field(None, description="Sugar in grams")
-    sodium_mg: float | None = Field(None, description="Sodium in milligrams")
+    calories: int | None = Field(None, description="Total calories for entire recipe")
+    protein_grams: float | None = Field(None, description="Total protein in grams for entire recipe")
+    carbs_grams: float | None = Field(None, description="Total carbohydrates in grams for entire recipe")
+    fat_grams: float | None = Field(None, description="Total fat in grams for entire recipe")
+    fiber_grams: float | None = Field(None, description="Total fiber in grams for entire recipe")
+    sugar_grams: float | None = Field(None, description="Total sugar in grams for entire recipe")
+    sodium_mg: float | None = Field(None, description="Total sodium in milligrams for entire recipe")
 
 
 class Recipe(BaseModel):
@@ -41,7 +41,7 @@ class Recipe(BaseModel):
     instructions: list[InstructionSection] = Field(..., description="Cooking instructions")
     prep_time_minutes: int = Field(..., description="Preparation time in minutes")
     cook_time_minutes: int = Field(..., description="Cooking time in minutes")
-    nutrition: NutritionProfile | None = Field(None, description="Nutritional information")
+    nutrition: NutritionProfile | None = Field(None, description="Nutritional information for entire recipe (all servings)")
     servings: int = Field(..., description="Number of servings")
     serving_size: str | None = Field(None, description="Description of serving size")
     citations: list[str] | None = Field(None, description="Recipe sources and citations")

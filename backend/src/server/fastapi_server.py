@@ -81,7 +81,8 @@ async def generate_recipe(request: GenerateRecipeRequest) -> Recipe:
         if macros.sodium_mg:
             macro_parts.append(f"sodium={macros.sodium_mg}mg")
         if macro_parts:
-            prompt_lines.append("Target macros: " + ", ".join(macro_parts))
+            prompt_lines.append("Target macros per serving: " + ", ".join(macro_parts))
+            prompt_lines.append("(Remember: nutrition facts in your response should be for the ENTIRE recipe, not per serving)")
 
     if request.available_ingredients:
         ing_list = []

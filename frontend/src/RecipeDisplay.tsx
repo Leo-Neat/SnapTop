@@ -92,47 +92,48 @@ const RecipeDisplay: React.FC<RecipeDisplayProps> = ({ recipe, onBack }) => {
                   </svg>
                   Nutrition Facts
                 </h2>
+                <p className="text-xs text-gray-500 mb-3">Per serving</p>
                 <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                   {recipe.nutrition.calories !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Calories</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.calories}</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.calories / recipe.servings)}</span>
                     </div>
                   )}
                   {recipe.nutrition.proteinGrams !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Protein</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.proteinGrams}g</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.proteinGrams / recipe.servings)}g</span>
                     </div>
                   )}
                   {recipe.nutrition.carbsGrams !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Carbohydrates</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.carbsGrams}g</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.carbsGrams / recipe.servings)}g</span>
                     </div>
                   )}
                   {recipe.nutrition.fatGrams !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Fat</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.fatGrams}g</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.fatGrams / recipe.servings)}g</span>
                     </div>
                   )}
                   {recipe.nutrition.fiberGrams !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Fiber</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.fiberGrams}g</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.fiberGrams / recipe.servings)}g</span>
                     </div>
                   )}
                   {recipe.nutrition.sugarGrams !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Sugar</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.sugarGrams}g</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.sugarGrams / recipe.servings)}g</span>
                     </div>
                   )}
                   {recipe.nutrition.sodiumMg !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Sodium</span>
-                      <span className="font-semibold text-gray-900">{recipe.nutrition.sodiumMg}mg</span>
+                      <span className="font-semibold text-gray-900">{Math.round(recipe.nutrition.sodiumMg / recipe.servings)}mg</span>
                     </div>
                   )}
                 </div>
