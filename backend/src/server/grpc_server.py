@@ -38,6 +38,7 @@ class MealPrepServiceServicer(mealprep_service_pb2_grpc.MealPrepServiceServicer)
 
     def GenerateRecipe(self, request, context):
         # Wire to recipe agent
+        logging.info(f"GenerateRecipe called with description: {request.description}")
 
         # Build a single prompt string from all request fields
         prompt_lines = []
@@ -80,23 +81,36 @@ class MealPrepServiceServicer(mealprep_service_pb2_grpc.MealPrepServiceServicer)
             prompt_lines.append("Available ingredients: " + ", ".join(ing_list))
 
         prompt = "\n".join(prompt_lines)
+        logging.info(f"Generated prompt: {prompt}")
 
-        # Compose agent input as in main()
-        agent_input = {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ]
-        }
-        result = agent.invoke(agent_input)
-        recipe_obj = result["structured_response"]
-        # Convert Pydantic Recipe to proto
-        recipe_proto = (
-            recipe_obj.to_proto()
-            if hasattr(recipe_obj, "to_proto")
-            else recipe_pb2.Recipe(**recipe_obj.model_dump())
-        )
-        return recipe_proto
+        try:
+            # Compose agent input as in main()
+            agent_input = {
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ]
+            }
+            logging.info("Invoking agent...")
+            result = agent.invoke(agent_input)
+            logging.info(f"Agent result: {result}")
+
+            recipe_obj = result["structured_response"]
+            logging.info(f"Recipe object: {recipe_obj}")
+
+            # Convert Pydantic Recipe to proto
+            recipe_proto = (
+                recipe_obj.to_proto()
+                if hasattr(recipe_obj, "to_proto")
+                else recipe_pb2.Recipe(**recipe_obj.model_dump())
+            )
+            logging.info(f"Returning recipe proto: {recipe_proto.title}")
+            return recipe_proto
+        except Exception as e:
+            logging.error(f"Error in GenerateRecipe: {e}", exc_info=True)
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(f"Error generating recipe: {str(e)}")
+            return recipe_pb2.Recipe()
 
 
 def serve():

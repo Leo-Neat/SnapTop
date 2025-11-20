@@ -1,0 +1,29 @@
+{
+  "name": "meal-prep-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "proto": "protoc --js_out=import_style=commonjs,binary:./src/generated --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/generated -I ../proto ../proto/*.proto"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "grpc-web": "^1.4.2",
+    "google-protobuf": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/google-protobuf": "^3.15.12",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.32",
+    "autoprefixer": "^10.4.16"
+  }
+}

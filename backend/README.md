@@ -99,21 +99,38 @@ This backend implements a multi-agent meal planning system using LangGraph, Lang
   uv run src/agents/recipe_agent.py
   ```
 
-### 6. Running the gRPC Server Locally
+### 6. Running the gRPC Server
 
-To start the MealPrep gRPC server locally:
+#### Option A: Using Docker (Recommended)
+
+The easiest way to run the backend is with Docker Compose (includes backend, Envoy, and frontend):
+
+```bash
+# From project root
+docker-compose up backend
+```
+
+The backend will start on port 50051. To run all services together:
+
+```bash
+docker-compose up
+```
+
+#### Option B: Running Locally
+
+To start the MealPrep gRPC server locally for development:
 
 1. Ensure your Python environment is activated and dependencies are installed (see Setup above).
 2. Export your PYTHONPATH as described above.
 3. Run the server:
    ```bash
-   uv run backend/src/server/grpc_server.py
+   uv run python -m backend.src.server.grpc_server
    # or, if your venv is active:
-   python backend/src/server/grpc_server.py
+   python -m backend.src.server.grpc_server
    ```
 4. The server will start on port 50051 by default.
 
-You can connect to it using any gRPC client, using the proto definitions in `protos/api/v1/`.
+You can connect to it using any gRPC client, using the proto definitions in `proto/`.
 
 ### 7. Cloud Credentials
 - Set up GCP credentials and Secret Manager for API keys as described in the cloud integration section.
