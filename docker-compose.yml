@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI server
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-credentials.json
+    volumes:
+      - ~/.config/gcloud/application_default_credentials.json:/app/gcp-credentials.json:ro
+    networks:
+      - recipe-network
+
+  # Frontend development server
+  frontend:
+    image: node:20-slim
+    platform: linux/amd64
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npm run dev -- --host"
+    networks:
+      - recipe-network
+    depends_on:
+      - backend
+
+networks:
+  recipe-network:
+    driver: bridge
+
+volumes:
+  frontend_node_modules:

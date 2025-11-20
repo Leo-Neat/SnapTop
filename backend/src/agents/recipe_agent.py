@@ -2,7 +2,7 @@ from backend.src.langgraph_tools.nutrition import get_nutrition
 from backend.src.langgraph_tools.recipe_search import fetch_url_content, search_tool
 from langchain.agents import create_agent
 from backend.src.common.llms import get_gemini_flash
-from backend.generated.recipe_p2p import Recipe
+from backend.src.models.recipe import Recipe
 
 # System prompt for the agent
 system_prompt = (
@@ -11,6 +11,8 @@ system_prompt = (
     "You can use the fetch URL tool to dive deeper into any of the recipes you found for inspiration, extracting details or clarifying cooking steps. "
     "Use the nutrition search tool to look up nutrition information for each individual ingredient, not for entire recipes. "
     "Sum the nutrition values for all ingredients to provide accurate macros for the final recipe. "
+    "IMPORTANT: The nutrition facts (calories, protein, carbs, fat, etc.) must be for the ENTIRE recipe (total for ALL servings), NOT per serving. "
+    "Add up all the nutrition from all ingredients to get the total nutrition for the complete recipe. "
     "Your output must be a valid JSON object matching the Recipe schema. "
     "Always cite sources for inspiration in the citations field. "
     "If a user requests substitutions or has dietary restrictions, adapt the recipe accordingly and explain your choices in the instructions. "
