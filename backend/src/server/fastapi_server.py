@@ -1,9 +1,13 @@
 """FastAPI server for SnapTop meal prep service."""
 
 import logging
+import os
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from google.auth.transport import requests
+from google.oauth2 import id_token
 
 from backend.src.models import (
     GenerateRecipeRequest,
@@ -14,9 +18,15 @@ from backend.src.models import (
     Recipe,
     MealPlan,
     ShoppingList,
+    User,
+    Token,
+    AuthResponse,
+    GoogleAuthRequest,
+    FacebookAuthRequest,
 )
 from backend.src.agents.recipe_agent import agent, system_prompt
 from backend.src.langgraph_tools.generate_recipe_image import generate_recipe_image
+from backend.src.common.auth_utils import create_access_token
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,6 +51,133 @@ app.add_middleware(
 async def root():
     """Health check endpoint."""
     return {"status": "healthy", "service": "SnapTop Meal Prep API"}
+
+
+@app.post("/api/auth/google", response_model=AuthResponse)
+async def google_auth(request: GoogleAuthRequest) -> AuthResponse:
+    """
+    Authenticate user with Google OAuth.
+
+    Args:
+        request: Google OAuth credential
+
+    Returns:
+        AuthResponse: User information and JWT token
+    """
+    logger.info("Google authentication requested")
+
+    try:
+        # Verify the Google token
+        google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+        if not google_client_id:
+            raise HTTPException(
+                status_code=500,
+                detail="Google OAuth not configured. Set GOOGLE_CLIENT_ID environment variable.",
+            )
+
+        # Verify the token with Google
+        idinfo = id_token.verify_oauth2_token(
+            request.credential, requests.Request(), google_client_id
+        )
+
+        # Extract user information
+        user = User(
+            user_id=idinfo["sub"],
+            email=idinfo["email"],
+            name=idinfo.get("name", ""),
+            picture=idinfo.get("picture"),
+            provider="google",
+        )
+
+        # Create JWT token
+        access_token = create_access_token(
+            data={
+                "sub": user.user_id,
+                "email": user.email,
+                "provider": user.provider,
+            }
+        )
+
+        token = Token(access_token=access_token)
+
+        logger.info(f"Google authentication successful for user: {user.email}")
+        return AuthResponse(user=user, token=token)
+
+    except ValueError as e:
+        logger.error(f"Invalid Google token: {e}")
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+    except Exception as e:
+        logger.error(f"Google authentication error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"Authentication failed: {str(e)}"
+        )
+
+
+@app.post("/api/auth/facebook", response_model=AuthResponse)
+async def facebook_auth(request: FacebookAuthRequest) -> AuthResponse:
+    """
+    Authenticate user with Facebook OAuth.
+
+    Args:
+        request: Facebook OAuth access token and user ID
+
+    Returns:
+        AuthResponse: User information and JWT token
+    """
+    logger.info("Facebook authentication requested")
+
+    try:
+        # Verify the Facebook token by fetching user data
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://graph.facebook.com/me",
+                params={
+                    "access_token": request.access_token,
+                    "fields": "id,name,email,picture",
+                },
+            )
+
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=401, detail="Invalid Facebook access token"
+                )
+
+            fb_user = response.json()
+
+            # Verify user ID matches
+            if fb_user.get("id") != request.user_id:
+                raise HTTPException(status_code=401, detail="User ID mismatch")
+
+            # Extract user information
+            user = User(
+                user_id=fb_user["id"],
+                email=fb_user.get("email", ""),
+                name=fb_user.get("name", ""),
+                picture=fb_user.get("picture", {}).get("data", {}).get("url"),
+                provider="facebook",
+            )
+
+            # Create JWT token
+            access_token = create_access_token(
+                data={
+                    "sub": user.user_id,
+                    "email": user.email,
+                    "provider": user.provider,
+                }
+            )
+
+            token = Token(access_token=access_token)
+
+            logger.info(f"Facebook authentication successful for user: {user.email}")
+            return AuthResponse(user=user, token=token)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Facebook authentication error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"Authentication failed: {str(e)}"
+        )
 
 
 @app.post("/api/recipes/generate", response_model=Recipe)

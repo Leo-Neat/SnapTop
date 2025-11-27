@@ -1,7 +1,8 @@
-import { Recipe, GenerateRecipeRequest } from './types';
+import { Recipe, GenerateRecipeRequest, AuthResponse, GoogleAuthRequest, FacebookAuthRequest } from './types';
 
-// FastAPI backend endpoint
-const API_ENDPOINT = 'http://localhost:8000/api/recipes/generate';
+// FastAPI backend endpoints
+const API_BASE = 'http://localhost:8000';
+const API_ENDPOINT = `${API_BASE}/api/recipes/generate`;
 
 export async function generateRecipe(request: GenerateRecipeRequest): Promise<Recipe> {
   try {
@@ -79,6 +80,83 @@ export async function generateRecipe(request: GenerateRecipeRequest): Promise<Re
     return recipe;
   } catch (error) {
     console.error('Error generating recipe:', error);
+    throw error;
+  }
+}
+
+export async function authenticateWithGoogle(credential: string): Promise<AuthResponse> {
+  try {
+    const response = await fetch(`${API_BASE}/api/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ credential }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Authentication failed: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    // Convert snake_case to camelCase
+    return {
+      user: {
+        userId: data.user.user_id,
+        email: data.user.email,
+        name: data.user.name,
+        picture: data.user.picture,
+        provider: data.user.provider,
+      },
+      token: {
+        accessToken: data.token.access_token,
+        tokenType: data.token.token_type,
+      },
+    };
+  } catch (error) {
+    console.error('Google authentication error:', error);
+    throw error;
+  }
+}
+
+export async function authenticateWithFacebook(accessToken: string, userId: string): Promise<AuthResponse> {
+  try {
+    const response = await fetch(`${API_BASE}/api/auth/facebook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_token: accessToken,
+        user_id: userId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Authentication failed: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    // Convert snake_case to camelCase
+    return {
+      user: {
+        userId: data.user.user_id,
+        email: data.user.email,
+        name: data.user.name,
+        picture: data.user.picture,
+        provider: data.user.provider,
+      },
+      token: {
+        accessToken: data.token.access_token,
+        tokenType: data.token.token_type,
+      },
+    };
+  } catch (error) {
+    console.error('Facebook authentication error:', error);
     throw error;
   }
 }

@@ -32,6 +32,13 @@ from backend.src.models.requests import (
     RegenerateRecipeRequest,
     GetShoppingListRequest,
 )
+from backend.src.models.auth import (
+    User,
+    Token,
+    AuthResponse,
+    GoogleAuthRequest,
+    FacebookAuthRequest,
+)
 
 __all__ = [
     # Recipe models
@@ -64,4 +71,10 @@ __all__ = [
     "ModifyRecipeRequest",
     "RegenerateRecipeRequest",
     "GetShoppingListRequest",
+    # Auth models
+    "User",
+    "Token",
+    "AuthResponse",
+    "GoogleAuthRequest",
+    "FacebookAuthRequest",
 ]
